@@ -1,0 +1,8 @@
+{
+  "name": "EventSnap New",
+  "description": "Platform pencarian acara \u0026 otomatisasi sertifikat pintar untuk panitia kegiatan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-brand-orange: #c2662c;
+  --color-brand-orange-hover: #a55220;
+  --color-brand-cream: #f9f5f0;
+  --color-brand-card: #fbf9f6;
+  --color-brand-charcoal: #2d2722;
+  --color-brand-border: #e6ded5;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-brand-cream);
+    color: var(--color-brand-charcoal);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Custom styles for high-fidelity overlays or custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1ebd9;
+}
+::-webkit-scrollbar-thumb {
+  background: #c2662c80;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c2662c;
+}
+
+/* Certificate layout rendering animations */
+@keyframes certificate-glow {
+  0% { transform: scale(1); box-shadow: 0 4px 20px rgba(194, 102, 44, 0.1); }
+  50% { transform: scale(1.01); box-shadow: 0 10px 30px rgba(194, 102, 44, 0.25); }
+  100% { transform: scale(1); box-shadow: 0 4px 20px rgba(194, 102, 44, 0.1); }
+}
+
+.glow-cert {
+  animation: certificate-glow 3s infinite ease-in-out;
+}

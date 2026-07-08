@@ -1,0 +1,87 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "debian-openssl-1.1.x", "linux-musl"]
+}
+
+model Workspace {
+  id        String    @id @default(uuid())
+  name      String    // Nama organisasi, misal: "HIMA Teknik Informatika"
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  projects  Project[]
+
+  @@map("workspaces")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  password      String
+  dailyQuota    Int       @default(50) @map("daily_quota")
+  lastResetDate DateTime  @default(now()) @map("last_reset_date")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  projects      Project[]
+
+  @@map("users")
+}
+
+model Project {
+  id                   String                @id @default(uuid())
+  projectName          String                @map("nama_project") // Menyimpan nama acara atau kepanitiaan
+  status               String                // Status proyek, misal: "Draft", "Ready", "Generated"
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  
+  // Relasi One-to-Many ke Workspace
+  workspaceId          String                @map("workspace_id")
+  workspace            Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  // Relasi One-to-Many ke User
+  userId               String?               @map("user_id")
+  user                 User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relasi One-to-Many ke CertificateTemplate & Participant
+  certificateTemplates CertificateTemplate[]
+  participants         Participant[]
+
+  @@map("projects")
+}
+
+model CertificateTemplate {
+  id          String   @id @default(uuid())
+  templateUrl String   @map("template_url") // URL gambar latar belakang/desain sertifikat (PNG/JPEG)
+  mappings    Json     // Menyimpan koordinat & pengaturan teks dinamis (X, Y, font, warna, ukuran)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  // Relasi One-to-Many ke Project
+  projectId   String   @map("project_id")
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("certificate_templates")
+}
+
+model Participant {
+  id                String   @id @default(uuid())
+  name              String   // Nama lengkap peserta beserta gelar untuk dicetak
+  email             String   // Alamat email peserta untuk pengiriman sertifikat
+  certificateNumber String?  @map("certificate_number") // Nomor registrasi unik sertifikat (misal: REG-2026-001)
+  institution       String?  // Asal instansi/universitas/perusahaan
+  deliveryStatus    String   @default("Pending") @map("delivery_status") // Status pengiriman: Pending, Sent, Failed
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  
+  // Relasi One-to-Many ke Project
+  projectId         String   @map("project_id")
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("participants")
+}
