@@ -36,7 +36,19 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get('content-type') || '';
+      const data = contentType.includes('application/json')
+        ? await res.json()
+        : null;
+
+      if (!data) {
+        const text = await res.text();
+        throw new Error(
+          text.trim().startsWith('<')
+            ? 'Endpoint API mengembalikan halaman HTML. Cek routing /api di Vercel.'
+            : text || 'Server tidak mengembalikan JSON.'
+        );
+      }
 
       if (!res.ok || !data.success) {
         throw new Error(data.message || 'Terjadi kesalahan. Silakan coba lagi.');

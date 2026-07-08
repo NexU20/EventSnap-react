@@ -11,6 +11,10 @@ import { checkAndResetQuota } from './src/lib/quota.ts';
 const app = express();
 app.use(express.json());
 
+app.get('/api/health', (_req, res) => {
+  res.json({ success: true, message: 'API is running' });
+});
+
 // Set up public static folder for uploaded certificate templates (using /tmp for write access on serverless runtimes)
 const uploadDir = path.join('/tmp', 'uploads', 'templates');
 mkdirSync(uploadDir, { recursive: true });
