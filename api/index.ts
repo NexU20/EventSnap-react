@@ -22,7 +22,10 @@ export default async function handler(req: any, res: any) {
 
   try {
     const serverModule = await import('../dist/server.cjs');
-    const app = serverModule.default || serverModule;
+    const app = serverModule.default?.default || serverModule.default || serverModule;
+    if (typeof app !== 'function') {
+      throw new Error('Express app export is not a function.');
+    }
     return app(req, res);
   } catch (error) {
     console.error('Failed to load Express app:', error);
