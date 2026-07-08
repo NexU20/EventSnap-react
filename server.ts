@@ -1,18 +1,50 @@
 import express from 'express';
-import { prisma } from './src/lib/prisma.ts';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
 import { mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
-import { checkAndResetQuota } from './src/lib/quota.ts';
 
 const app = express();
 app.use(express.json());
 
 app.get('/api/health', (_req, res) => {
   res.json({ success: true, message: 'API is running' });
+});
+
+let prisma: typeof import('./src/lib/prisma.ts').prisma;
+let checkAndResetQuota: typeof import('./src/lib/quota.ts').checkAndResetQuota;
+let databaseModulesPromise: Promise<void> | null = null;
+
+function loadDatabaseModules() {
+  databaseModulesPromise ??= Promise.all([
+    import('./src/lib/prisma.ts'),
+    import('./src/lib/quota.ts'),
+  ]).then(([prismaModule, quotaModule]) => {
+    prisma = prismaModule.prisma;
+    checkAndResetQuota = quotaModule.checkAndResetQuota;
+  });
+
+  return databaseModulesPromise;
+}
+
+app.use('/api', async (req, res, next) => {
+  if (req.path === '/health') {
+    return next();
+  }
+
+  try {
+    await loadDatabaseModules();
+    next();
+  } catch (error) {
+    console.error('Failed to initialize database modules:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal menginisialisasi koneksi database.',
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 });
 
 // Set up public static folder for uploaded certificate templates (using /tmp for write access on serverless runtimes)
