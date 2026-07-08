@@ -21,7 +21,8 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const { default: app } = await import('../server');
+    const serverModule = await import('../dist/server.cjs');
+    const app = serverModule.default || serverModule;
     return app(req, res);
   } catch (error) {
     console.error('Failed to load Express app:', error);
