@@ -1,6 +1,4 @@
-import app from '../server';
-
-export default function handler(req: any, res: any) {
+export default async function handler(req: any, res: any) {
   const pathParam = req.query?.path;
   const path = Array.isArray(pathParam) ? pathParam.join('/') : pathParam || '';
   const query = new URLSearchParams();
@@ -17,5 +15,20 @@ export default function handler(req: any, res: any) {
 
   const queryString = query.toString();
   req.url = `/api/${path}${queryString ? `?${queryString}` : ''}`;
-  return app(req, res);
+
+  if (path === 'health') {
+    return res.status(200).json({ success: true, message: 'API function is running' });
+  }
+
+  try {
+    const { default: app } = await import('../server');
+    return app(req, res);
+  } catch (error) {
+    console.error('Failed to load Express app:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Gagal memuat aplikasi API.',
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
